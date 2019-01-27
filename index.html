@@ -1,0 +1,48 @@
+<html lang=”en”>
+
+<head>
+	<title>Basic three.js</title>
+	<meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<link rel="shortcut icon" href="">
+	<script src="https://unpkg.com/ml5@0.1.1/dist/ml5.min.js"></script>
+	<script src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/100/three.min.js"></script>
+
+</head>
+<body>
+
+<div class = "container">
+
+	<!-- GLTF model -->
+	<div class="c">
+		<canvas id ="model"></canvas>
+	</div>
+
+	<!-- Video drawn on canvas -->
+	<div class = "c">
+		<canvas id ="videocan" style = "background-color: black; "></canvas>
+	</div>
+	<div class = "c">
+
+	<!-- Keypoints on board -->
+		<canvas id = "board" style = "background-color: green"></canvas>
+	</div>
+	
+
+</div>
+<div style="clear: both;"></div>
+
+ <video id="video" height="480" autoplay="true" style = "display:none;"></video> 
+
+<script src="js/GLTFLoader.js"></script>
+<script src="js/WebGL.js"></script>
+<!-- <script src ="js/AnimationClipCreator.js"></script> -->
+<script src= "js/OrbitControls.js"></script>
+<script src= "js/dat.gui.min.js"></script>
+ <script src = "js/main.js"></script> 
+ <script src = "js/Pose.js"></script> 
+
+
+</body>
+</html>
