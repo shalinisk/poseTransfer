@@ -8,7 +8,7 @@ Suggestions and collaboration are welcome.
 
 Next steps:
 1. Translate posenet results to 3D model.
-2. Convert orthographic coordinates to 2D canvas coordinates.
+2. Convert 2D canvas coordinates to orthographic coordinates - complete; needs better accuracy
 3. Record animation
 	- start and stop buttons
 	- smoothing function
