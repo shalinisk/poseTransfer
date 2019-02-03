@@ -7,12 +7,15 @@ if ( WEBGL.isWebGLAvailable() === false ) {
 var canvas3, controls, bones, modelGLTF;
 var camera, scene, renderer;
 
-var helper, model;
+var model;
 
 var roboSkeleton, mesh;
 
-var a = 0.175;
-var b =0.1;
+var mouse, pos;
+
+var width, height;
+
+const vector = new THREE.Vector3();
 
 init();
 loadModels();
@@ -21,8 +24,12 @@ function init() {
 
 	canvas3 = document.getElementById('model');
 
-	var width = canvas3.clientWidth;
-	var height = canvas3.clientHeight;
+	width = canvas3.clientWidth;
+	height = canvas3.clientHeight;
+
+	
+	pos = new THREE.Vector2();
+	mouse = new THREE.Vector2();
 
 	camera = new THREE.OrthographicCamera();
     camera.left = width / -2;
@@ -30,7 +37,7 @@ function init() {
     camera.top = height / 2;
     camera.bottom = height / -2;
     camera.near = 0.1;
-    camera.far = 1500;
+    camera.far = 600;
     camera.updateProjectionMatrix();
 
 	scene = new THREE.Scene();
@@ -38,31 +45,40 @@ function init() {
 
 
 	    // position and point the camera to the center of the scene
-        camera.position.x = -500;
-        camera.position.y = 200;
-        camera.position.z = 300;
-        camera.lookAt(scene.position);
+        camera.position.set(0,200,300);
+        //camera.lookAt(scene.position);
+
+        camera.lookAt(new THREE.Vector3(0,0,0));
 
 
 	var directionalLight = new THREE.DirectionalLight( 0xffffff );
-	directionalLight.position.set( -500, 200, 300 );
+	directionalLight.position.set( 0, 200, 500 );
 	scene.add( directionalLight );
 
 	var light = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1 );
-	light.position.set( -500, 200, 300 );
+	light.position.set( 0, 200, 300 );
 	scene.add( light );
 
 
 	renderer = new THREE.WebGLRenderer( { canvas:canvas3});
 	renderer.setSize(width, height, false);
 
+	console.log("Renderer width: ", renderer.domElement.clientWidth);
+	console.log("Renderer height: ", renderer.domElement.clientHeight);
+
+	console.log("Width:", width);
+	console.log("Height: ", height);
+
+
 	window.addEventListener( 'resize', onWindowResize, false );
 	window.addEventListener( 'mousemove', onDocumentMouseMove, false );
+	window.addEventListener('mousedown', onDocumentMouseDown, false);
 	//window.addEventListener('keypress',onDocumentKeyPress, false)
 
 	// start the animation loop
 	  renderer.setAnimationLoop( () => {
 
+	    
 	    update();
 	    render();
     } );
@@ -81,7 +97,7 @@ function init() {
 		    	model.position.copy( position );
 
 				// View skeleton
-				helper = new THREE.SkeletonHelper( modelGLTF.scene.children[0] );
+				var helper = new THREE.SkeletonHelper( modelGLTF.scene.children[0] );
 				helper.skeleton = modelGLTF.scene.children;
 					
 				helper.visible = true;	
@@ -110,6 +126,7 @@ function init() {
 		   		gltf.scene.position.y = -1.4;
 
 		    	scene.add(model);
+		    	console.log("Initial position: ", roboSkeleton.bones[2].position)
 
 
 			};
@@ -131,76 +148,48 @@ function init() {
 	
 		}
 
-
-		function onWindowResize() {
-			camera.aspect = canvas3.innerWidth / canvas3.innerHeight;
-			camera.updateProjectionMatrix();
-			renderer.setSize( canvas3.innerWidth, canvas3.innerHeight );
-		}
-
-
 		function onDocumentMouseMove( event ) {
 			event.preventDefault();
 		}
 
 
-		function resizeCanvasToDisplaySize() {
+		function onWindowResize() {
 		  const canvas3 = renderer.domElement;
 		  const width = canvas3.clientWidth;
 		  const height = canvas3.clientHeight;
 		  if (canvas3.width !== width ||canvas3.height !== height) {
-		    // you must pass false here or three.js sadly fights the browser
+		    
 		    renderer.setSize(width, height, false);
 		    camera.aspect = width / height;
 		    camera.updateProjectionMatrix();
 
-		    // set render target sizes here
+		    
 		  }
 }
 
 
 			function update() {
-				if(model) model.rotation.y = -1;
+				//if(model) model.rotation.y = -1;
 		
-
 			    if(roboSkeleton){
 
-			   	/*
-			   	 7 -> head,hands similarly 9
-			   	 2 -> body - moves everything except 2 foot
-			   	 11 - head
-			   	 12 - left shoulder bone
-			   	 26 - Right shoulder bone
-
-
-			   	 */
-			   	
-			   	if(poses. length > 0){
+			   	if(poses.length > 0){
 			   		
+			   		pos.x = poses[0].pose.keypoints[0].position.x;
+			   		pos.y = poses[0].pose.keypoints[0].position.y;
 
-			   		roboSkeleton.bones[2].position.x = poses[0].pose.keypoints[0].position.x/2000 - a;
-			   		roboSkeleton.bones[2].position.y = poses[0].pose.keypoints[0].position.y/2000 - b;
+			   		
+			  		vector.x = ( pos.x / renderer.domElement.clientWidth ) * 2 - 1;
+					vector.y = - ( pos.y/ renderer.domElement.clientHeight ) * 2 + 1;
+					vector.project( camera );
 
-
-			   		// roboSkeleton.bones[12].position.x = poses[0].pose.keypoints[5].position.x/2000 - 0.3
-			   		// roboSkeleton.bones[12].position.y = poses[0].pose.keypoints[5].position.y/2000 - 0.37
-
-			   		// roboSkeleton.bones[26].position.x = poses[0].pose.keypoints[6].position.x/2000- 0.3
-			   		// roboSkeleton.bones[26].position.y = poses[0].pose.keypoints[6].position.y/2000 - 0.37
-
-			   		// UpperarmL; actuallly looks like right lower leg
-
-			   		roboSkeleton.bones[6].position.x = poses[0].pose.keypoints[7].position.x/ 2000- a; 
-					roboSkeleton.bones[6].position.y = poses[0].pose.keypoints[7].position.y/2000 - b; 
-
-					// UpperarmR
-					// roboSkeleton.bones[9].position.x = poses[0].pose.keypoints[8].position.x/ 2000 - a; 
-					// roboSkeleton.bones[9].position.y = poses[0].pose.keypoints[8].position.y/2000 - b;
-
+			   		roboSkeleton.bones[2].position.x = vector.x*18;
+			   		roboSkeleton.bones[2].position.y = vector.y*20;
+			   		
 
 			   	}
 
-                roboSkeleton.matrixWorldNeedsUpdate = true;
+                roboSkeleton.bones[2].updateMatrix();
 
 			    }
 
@@ -211,3 +200,21 @@ function init() {
 			renderer.render( scene, camera );
 		}
 
+
+		function onDocumentMouseDown(event){
+
+		vector.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+		vector.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+		vector.project( camera ); // converts to -1 to 1 range
+
+		console.log("vector after project: ", vector);
+
+		if(roboSkeleton && poses.length > 0){
+				roboSkeleton.bones[2].position.x = vector.x;
+			   	roboSkeleton.bones[2].position.y = vector.y;
+
+			   	roboSkeleton.bones[2].updateMatrix();
+
+		}
+
+		}
